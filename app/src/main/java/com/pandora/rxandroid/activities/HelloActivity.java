@@ -1,3 +1,21 @@
+/*==================================================================================================
+□ INFORMATION
+   ○ Data : 09.Oct.2018
+   ○ Mail : eun1310434@gamil.com
+   ○ WebPage : https://eun1310434.github.io/
+   ○ Reference
+      - RxJava 프로그래밍 P205
+
+□ FUNCTION
+   ○
+
+□ Study
+   ○ RxAndroid에서 제공하는 스케줄러
+      - AndroidScheduler.mainThread() : 안드로이드의 UI 스레드에서 동작하는 스케줄러
+      - HandlerScheduler.from(handler) : 특정 핸들러에 의존하여 동작하는 스케줄러
+
+
+==================================================================================================*/
 package com.pandora.rxandroid.activities;
 
 

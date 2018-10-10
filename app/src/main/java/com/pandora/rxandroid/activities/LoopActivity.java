@@ -1,3 +1,18 @@
+/*==================================================================================================
+□ INFORMATION
+   ○ Data : 09.Oct.2018
+   ○ Mail : eun1310434@gamil.com
+   ○ WebPage : https://eun1310434.github.io/
+   ○ Reference
+      - RxJava 프로그래밍 P221
+
+□ FUNCTION
+   ○ 제어흐름
+
+□ Study
+   ○
+
+==================================================================================================*/
 package com.pandora.rxandroid.activities;
 
 
@@ -13,7 +28,6 @@ import com.pandora.rxandroid.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -37,8 +51,7 @@ public class LoopActivity extends AppCompatActivity {
     private LogAdapter mLogAdapter;
     private List<String> mLogs;
 
-    Iterable<String> samples  = Arrays.asList("banana", "orange", "apple", "apple mango",
-            "melon", "watermelon");
+    Iterable<String> samples = Arrays.asList("A-b", "B-a", "C-b", "D-a", "E-a", "F-a");
 
 
     @Override
@@ -63,18 +76,19 @@ public class LoopActivity extends AppCompatActivity {
 
     private void setSampleTitle() {
         mTitle.append(
-                Observable.fromIterable(samples)
-                        .reduce((r, s) -> (r + "\n") + s).blockingGet()
+                Observable
+                        .fromIterable(samples)
+                        .reduce((r, s) -> (r + "\n") + s) //각각의 리스트를 엔터로 구분하여 정렬
+                        .blockingGet()
         );
     }
-
 
 
     @OnClick(R.id.btn_loop)
     void loop() {
         log(">>>>> get an apple :: java");
         for (String s : samples) {
-            if (s.contains("apple")) {
+            if (s.contains("A")) {
                 log(s);
                 break;
             }
@@ -87,7 +101,7 @@ public class LoopActivity extends AppCompatActivity {
 
         //rxJava 1.x
         rx.Observable.from(samples)
-                .filter(s -> s.contains("apple"))
+                .filter(s -> s.contains("A"))
                 .firstOrDefault("Not found")
                 .subscribe(this::log);
     }
@@ -98,12 +112,40 @@ public class LoopActivity extends AppCompatActivity {
         log(">>>>> get an apple :: rx 2.x");
 
         // rxJava 2.x
-        Observable.fromIterable(samples)
-                .skipWhile(s -> !s.contains("apple"))
-//                .filter(s -> s.contains("apple"))
-                .first("Not found")
-                .subscribe(this::log);
+        //Rx2_observableSet_A();//리스트 중 a가 아닌 값은 무시하여 첫번째 것 출력
+        //Rx2_observableSet_B();//리스트 중 a가 아닌 값은 무시하여 첫번째 것 출력
+        //Rx2_observableSet_C();
+        Rx2_observableSet_D();
+    }
 
+    public void Rx2_observableSet_A() {
+        Observable
+                .fromIterable(samples)
+                .filter(s -> s.contains("a")) //a가 들어간 값만 출력
+                .first("Not found") // a가 들어있는 값중에 첫번째 것만 전달하며 값이 없을시 "Not found"출력
+                .subscribe(this::log);
+    }
+
+    public void Rx2_observableSet_B() {
+        Observable
+                .fromIterable(samples)
+                .skipWhile(s -> !s.contains("b")) //b가 아닌 값은 무시
+                .first("Not found") // a가 들어있는 값중에 첫번째 것만 전달하며 값이 없을시 "Not found"출력
+                .subscribe(this::log);
+    }
+
+    public void Rx2_observableSet_C() {
+        Observable
+                .fromIterable(samples)
+                .skipWhile(s -> !s.contains("a")) //a가 아닌 값은 무시
+                .subscribe(this::log);
+    }
+
+    public void Rx2_observableSet_D() {
+        Observable
+                .fromIterable(samples)
+                .filter(s -> s.contains("b")) //b가 들어간 값만 출력
+                .subscribe(this::log);
     }
 
 

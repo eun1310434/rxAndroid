@@ -11,8 +11,8 @@
         android:theme="@style/AppTheme">
         <!--<activity android:name=".activities.AsyncTaskActivity">-->
         <!--<activity android:name=".activities.TimerActivity">-->
-        <!--<activity android:name=".MainActivity">-->
-        <activity android:name=".activities.HelloRxAppActivity">
+        <!--<activity android:name=".activities.HelloRxAppActivity">-->
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
