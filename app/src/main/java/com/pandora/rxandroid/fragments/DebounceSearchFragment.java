@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,6 +64,19 @@ public class DebounceSearchFragment extends Fragment {
         setSearchResult();
         return layout;
     }
+
+    private void setSearchHistory() {
+        searchHistory = new ArrayList<>();
+        mHistoryAdapter = new HistoryAdapter(getActivity(), new ArrayList<>());
+        mLogView.setAdapter(mHistoryAdapter);
+    }
+
+    private void setSearchResult() {
+        searchResult = new ArrayList<>();
+        mSearchAdapter = new SearchAdapter(getActivity(), new ArrayList<>());
+        mLogView.setAdapter(mSearchAdapter);
+    }
+
 
     @Override
     public void onDestroyView() {
@@ -139,8 +153,8 @@ public class DebounceSearchFragment extends Fragment {
     public void rxTextView() {
         //RxTextView를 활용하여 문자가 바뀌는것만 확인하여 Observable을 생성
         mDisposable = RxTextView.textChangeEvents(mSearchBox) // getObservable()와 같음
-                .debounce(100, TimeUnit.MILLISECONDS)// 0.1초 뒤에 작동
-                .filter(str -> !TextUtils.isEmpty(str.text().toString())) // str이 empty가 아니면 실행
+                .debounce(400, TimeUnit.MILLISECONDS)// 0.4초 뒤에 작동
+                //.filter(str -> !TextUtils.isEmpty(str.text().toString())) // str이 empty가 아니면 실행
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(getObserverLib());
     }
@@ -151,26 +165,57 @@ public class DebounceSearchFragment extends Fragment {
             @Override
             public void onNext(TextViewTextChangeEvent view) {
                 //addSearchHistory("Search " + view.text().toString());
-                getSearchResult(view.text().toString());
+                String str = view.text().toString().trim();
+                Log.e(TAG,"getObserverLib::onNext("+str+")");
+                if(checkSearchWord(str)){
+                    //검색어 검사
+                    getTotalResult();
+                }else{
+                    //검색에 공백
+                    getSearchResult(str);
+                    //앞뒤에 있는 공백 제거
+                }
             }
 
             @Override
             public void onError(Throwable e) {
+                Log.e(TAG,"getObserverLib::onError("+e.toString()+")");
             }
 
             @Override
             public void onComplete() {
+                Log.e(TAG,"getObserverLib::onComplete()");
             }
         };
     }
 
-    private void setSearchResult() {
-        searchResult = new ArrayList<>();
-        mSearchAdapter = new SearchAdapter(getActivity(), new ArrayList<>());
-        mLogView.setAdapter(mSearchAdapter);
+
+    private String beforeWord = "";
+    private boolean checkSearchWord(String str) {
+        if(TextUtils.isEmpty(str)){
+            //공백검사
+            Log.e(TAG,"checkSearchWord::공백검사");
+            return true;
+        } else if (beforeWord.equals(str)) {
+            //이전 검색어와 같은지 검사
+            Log.e(TAG,"checkSearchWord::이전 검색어와 같은지 검사");
+            return true;
+        }
+
+        beforeWord = str;
+        return false;
     }
 
+    private void getTotalResult() {
+        mSearchAdapter.clear();
+        mSearchAdapter.addAll(dataList);
+        searchResult.clear();
+    }
 
+    /**
+     * 검색어 출력
+     * @param search 입력한 검색어
+     */
     private void getSearchResult(String search) {
         Observable
                 .fromIterable(dataList)
@@ -178,16 +223,18 @@ public class DebounceSearchFragment extends Fragment {
                 .subscribe(new DisposableObserver<String>() {
                                @Override
                                public void onNext(String s) {
+                                   Log.e(TAG,"getSearchResult::onNext("+s+")");
                                    searchResult.add(s);
                                }
 
                                @Override
                                public void onError(Throwable e) {
-
+                                   Log.e(TAG,"getSearchResult::onError("+e.toString()+")");
                                }
 
                                @Override
                                public void onComplete() {
+                                   Log.e(TAG,"getSearchResult::onComplete()");
                                    mSearchAdapter.clear();
                                    mSearchAdapter.addAll(searchResult);
                                    searchResult.clear();
@@ -203,11 +250,6 @@ public class DebounceSearchFragment extends Fragment {
         mHistoryAdapter.addAll(searchHistory);
     }
 
-    private void setSearchHistory() {
-        searchHistory = new ArrayList<>();
-        mHistoryAdapter = new HistoryAdapter(getActivity(), new ArrayList<>());
-        mLogView.setAdapter(mHistoryAdapter);
-    }
 
     class SearchAdapter extends ArrayAdapter<String> {
         public SearchAdapter(Context context, List<String> logs) {
